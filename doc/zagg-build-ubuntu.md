@@ -25,19 +25,4 @@
 make -j 8 // 8 is the number of cores you have in your pc 
 
 
-## Errors while building
-
-Note*: I got these errors on running `./configure` command with Ubuntu 16.04. 
-
-### Error1: No working boost sleep implementation found.
- 
-Fix : `sudo apt-get install libboost-all-dev`
-
-Then ran the `./configure` command
-
-### Error2: libevent not found
-
-Fix : `sudo apt install libevent-dev`
-
-Now run the `./configure` and `./make` commands
 
