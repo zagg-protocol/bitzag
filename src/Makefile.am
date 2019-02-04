@@ -93,6 +93,8 @@ if BUILD_BITCOIN_TX
   bin_PROGRAMS += bitcoin-tx
 endif
 
+# bin_PROGRAMS += bitcoinall
+
 .PHONY: FORCE check-symbols check-security
 # bitcoin core #
 BITCOIN_CORE_H = \
@@ -195,6 +197,7 @@ BITCOIN_CORE_H = \
   util/time.h \
   validation.h \
   validationinterface.h \
+  version.h \
   versionbits.h \
   versionbitsinfo.h \
   walletinitinterface.h \
