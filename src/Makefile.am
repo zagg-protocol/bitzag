@@ -462,7 +462,8 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 # bitcoin Library #
 libbitcoin_all_a_SOURCES = \
   bitcoind.cpp \
-  $(BITCOIN_CORE_H)
+  $(BITCOIN_CORE_H) \
+  version.h
 libbitcoin_all_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_all_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_all_a_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
@@ -490,7 +491,7 @@ libbitcoin_all_a_LIBADD += \
 
 
 
-# bitcoind binary #
+# bitcoinall mock binary #
 bitcoinall_SOURCES = bitcoind.cpp
 bitcoinall_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 bitcoinall_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
