@@ -464,20 +464,131 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 
 # bitcoin Library #
 libbitcoin_all_a_SOURCES = \
-  bitcoind.cpp \
-  $(BITCOIN_CORE_H) \
-  version.h
+  addrdb.cpp \
+  addrman.cpp \
+  bloom.cpp \
+  blockencodings.cpp \
+  blockfilter.cpp \
+  chain.cpp \
+  checkpoints.cpp \
+  consensus/tx_verify.cpp \
+  httprpc.cpp \
+  httpserver.cpp \
+  index/base.cpp \
+  index/txindex.cpp \
+  interfaces/chain.cpp \
+  interfaces/handler.cpp \
+  interfaces/node.cpp \
+  init.cpp \
+  dbwrapper.cpp \
+  merkleblock.cpp \
+  miner.cpp \
+  net.cpp \
+  net_processing.cpp \
+  noui.cpp \
+  outputtype.cpp \
+  policy/fees.cpp \
+  policy/policy.cpp \
+  policy/rbf.cpp \
+  pow.cpp \
+  rest.cpp \
+  rpc/blockchain.cpp \
+  rpc/mining.cpp \
+  rpc/misc.cpp \
+  rpc/net.cpp \
+  rpc/rawtransaction.cpp \
+  rpc/server.cpp \
+  rpc/util.cpp \
+  script/sigcache.cpp \
+  shutdown.cpp \
+  timedata.cpp \
+  torcontrol.cpp \
+  txdb.cpp \
+  txmempool.cpp \
+  ui_interface.cpp \
+  validation.cpp \
+  validationinterface.cpp \
+  versionbits.cpp \
+  amount.h \
+  arith_uint256.cpp \
+  arith_uint256.h \
+  consensus/merkle.cpp \
+  consensus/merkle.h \
+  consensus/params.h \
+  consensus/validation.h \
+  hash.cpp \
+  hash.h \
+  prevector.h \
+  primitives/block.cpp \
+  primitives/block.h \
+  primitives/transaction.cpp \
+  primitives/transaction.h \
+  pubkey.cpp \
+  pubkey.h \
+  script/bitcoinconsensus.cpp \
+  script/interpreter.cpp \
+  script/interpreter.h \
+  script/script.cpp \
+  script/script.h \
+  script/script_error.cpp \
+  script/script_error.h \
+  serialize.h \
+  span.h \
+  tinyformat.h \
+  uint256.cpp \
+  uint256.h \
+  util/strencodings.cpp \
+  util/strencodings.h \
+  version.h \
+  base58.cpp \
+  bech32.cpp \
+  chainparams.cpp \
+  coins.cpp \
+  compressor.cpp \
+  core_read.cpp \
+  core_write.cpp \
+  key.cpp \
+  key_io.cpp \
+  keystore.cpp \
+  netaddress.cpp \
+  netbase.cpp \
+  policy/feerate.cpp \
+  protocol.cpp \
+  scheduler.cpp \
+  script/descriptor.cpp \
+  script/ismine.cpp \
+  script/sign.cpp \
+  script/standard.cpp \
+  versionbitsinfo.cpp \
+  warnings.cpp \
+  support/lockedpool.cpp \
+  chainparamsbase.cpp \
+  clientversion.cpp \
+  compat/glibc_sanity.cpp \
+  compat/glibcxx_sanity.cpp \
+  compat/strnlen.cpp \
+  fs.cpp \
+  logging.cpp \
+  random.cpp \
+  rpc/protocol.cpp \
+  support/cleanse.cpp \
+  sync.cpp \
+  threadinterrupt.cpp \
+  util/bytevectorhash.cpp \
+  util/system.cpp \
+  util/moneystr.cpp \
+  util/time.cpp \
+  $(BITCOIN_CORE_H)
+
 libbitcoin_all_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_all_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_all_a_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# libbitcoin_all_a_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
 libbitcoin_all_a_SOURCES += bitcoind-res.rc
 endif
 
-libbitcoin_all_a_LIBADD = $(LIBBITCOIN_SERVER)
-
-libbitcoin_all_a_LIBADD += \
+libbitcoin_all_a_LIBADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_SERVER) \
@@ -491,7 +602,6 @@ libbitcoin_all_a_LIBADD += \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
-
 
 
 # bitcoinall mock binary #
