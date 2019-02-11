@@ -588,20 +588,20 @@ if TARGET_WINDOWS
 libbitcoin_all_a_SOURCES += bitcoind-res.rc
 endif
 
-libbitcoin_all_a_LIBADD = \
-  $(LIBBITCOIN_SERVER) \
-  $(LIBBITCOIN_WALLET) \
-  $(LIBBITCOIN_SERVER) \
-  $(LIBBITCOIN_COMMON) \
-  $(LIBUNIVALUE) \
-  $(LIBBITCOIN_UTIL) \
-  $(LIBBITCOIN_ZMQ) \
-  $(LIBBITCOIN_CONSENSUS) \
-  $(LIBBITCOIN_CRYPTO) \
-  $(LIBLEVELDB) \
-  $(LIBLEVELDB_SSE42) \
-  $(LIBMEMENV) \
-  $(LIBSECP256K1)
+# libbitcoin_all_a_LIBADD = \
+#   $(LIBBITCOIN_SERVER) \
+#   $(LIBBITCOIN_WALLET) \
+#   $(LIBBITCOIN_SERVER) \
+#   $(LIBBITCOIN_COMMON) \
+#   $(LIBUNIVALUE) \
+#   $(LIBBITCOIN_UTIL) \
+#   $(LIBBITCOIN_ZMQ) \
+#   $(LIBBITCOIN_CONSENSUS) \
+#   $(LIBBITCOIN_CRYPTO) \
+#   $(LIBLEVELDB) \
+#   $(LIBLEVELDB_SSE42) \
+#   $(LIBMEMENV) \
+#   $(LIBSECP256K1)
 
 
 # bitcoinall mock binary #
