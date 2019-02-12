@@ -17,7 +17,7 @@ class Chain;
 UniValue SignTransaction(interfaces::Chain& chain, CMutableTransaction& mtx, const UniValue& prevTxs, CBasicKeyStore *keystore, bool tempKeystore, const UniValue& hashType);
 
 /** Send tranasction from zagg in HEX format */
-static std::string SendRawTransactionZagg(const std::string& hex_tx);
+std::string SendRawTransactionZagg(const std::string& hex_tx);
 
 /** Create a transaction from univalue parameters */
 CMutableTransaction ConstructTransaction(const UniValue& inputs_in, const UniValue& outputs_in, const UniValue& locktime, const UniValue& rbf);

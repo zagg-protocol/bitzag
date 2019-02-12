@@ -1102,7 +1102,7 @@ static UniValue sendrawtransaction(const JSONRPCRequest& request)
     return hashTx.GetHex();
 }
 
-static std::string SendRawTransactionZagg(const std::string& hex_tx)
+std::string SendRawTransactionZagg(const std::string& hex_tx)
 {
     std::promise<void> promise;
 
