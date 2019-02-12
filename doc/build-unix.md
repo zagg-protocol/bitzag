@@ -1,5 +1,16 @@
 UNIX BUILD NOTES
 ====================
+- This will only build the `bitcoind` others are disabled. If you want to enable them, look into `./buildConfigure.sh` file and make the necessary changes.
+- Please change the heapsize and number of cores you want to give for building in `buildConfigure.sh` and `make` respectively.
+
+```
+./autogen.sh
+./buildConfigure.sh
+make -j 6
+```
+
+--------------------
+
 Some notes on how to build Bitcoin Core in Unix.
 
 (For BSD specific instructions, see `build-*bsd.md` in this directory.)
