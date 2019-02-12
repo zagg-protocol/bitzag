@@ -834,7 +834,7 @@ static int CommandLineRawTx(int argc, char* argv[])
     }
     return nRet;
 }
-
+/*
 int main(int argc, char* argv[])
 {
     SetupEnvironment();
@@ -862,4 +862,4 @@ int main(int argc, char* argv[])
         PrintExceptionContinue(nullptr, "CommandLineRawTx()");
     }
     return ret;
-}
+}*/
