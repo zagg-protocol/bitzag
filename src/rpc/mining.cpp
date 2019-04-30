@@ -155,6 +155,32 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     return blockHashes;
 }
 
+/** Generate zagg block */
+UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,const std::string scpTxHex)
+{
+    
+    UniValue blockHashes(UniValue::VARR);
+    
+    // parse hex string from parameter
+    CMutableTransaction mtx;
+    if (!DecodeHexTx(mtx, scpTxHex))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+    
+    // Create the block with new blockHASH
+    std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, mtx));
+    
+    if (!pblocktemplate.get())
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
+    CBlock *pblock = &pblocktemplate->block;
+
+    std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
+    if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
+    blockHashes.push_back(pblock->GetHash().GetHex());
+
+    return blockHashes;
+}
+
 static UniValue generatetoaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)

@@ -159,6 +159,9 @@ public:
     /** Construct a new block template with coinbase to scriptPubKeyIn */
     std::unique_ptr<CBlockTemplate> CreateNewBlock(const CScript& scriptPubKeyIn, bool fMineWitnessTx=true);
 
+    /** Overriding for creating zagg block. Might have to change later */
+    std::unique_ptr<CBlockTemplate> CreateNewBlock(const CScript& scriptPubKeyIn, CMutableTransaction scpTx, bool fMineWitnessTx=true);
+
 private:
     // utility functions
     /** Clear the block's state and prepare for assembling a new block */
