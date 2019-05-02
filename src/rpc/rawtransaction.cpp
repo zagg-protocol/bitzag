@@ -1106,11 +1106,13 @@ std::string SendRawTransactionZagg(const std::string& hex_tx)
 {
     std::promise<void> promise;
 
+    std::cout << "the string hex is " << hex_tx << "\n";
     // parse hex string from parameter
     CMutableTransaction mtx;
     if (!DecodeHexTx(mtx, hex_tx))
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
-
+    
+    std::cout << "Decode hex transaction passed" << "\n";
     CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
     const uint256& hashTx = tx->GetHash();
 
