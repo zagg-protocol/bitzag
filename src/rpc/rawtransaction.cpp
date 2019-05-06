@@ -1160,14 +1160,14 @@ std::string SendRawTransactionZagg(const std::string& hex_tx)
     // cs_main
     promise.get_future().wait();
 
-    if(!g_connman)
-        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+    // if(!g_connman)
+    //     throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
 
-    CInv inv(MSG_TX, hashTx);
-    g_connman->ForEachNode([&inv](CNode* pnode)
-    {
-        pnode->PushInventory(inv);
-    });
+    // CInv inv(MSG_TX, hashTx);
+    // g_connman->ForEachNode([&inv](CNode* pnode)
+    // {
+    //     pnode->PushInventory(inv);
+    // });
 
     return hashTx.GetHex();
 }
