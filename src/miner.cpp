@@ -186,6 +186,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 /** Create zagg block. A lot of things has to be removed later from here, like target, consesnsus, coinbase etc. */
 std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn, CMutableTransaction scpTx, bool fMineWitnessTx)
 {
+
+    std::cout << " Inside createBlock method \n";
     int64_t nTimeStart = GetTimeMicros();
 
     resetBlock();
@@ -247,28 +249,43 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
     coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
+
+    // for coinbase transaction
     pblock->vtx[0] = MakeTransactionRef(std::move(coinbaseTx));
+    std::cout << " Coinbase tx added to the block" << "\n";
+
+    // for zagg transaction
+    pblock->vtx.emplace_back();
     pblock->vtx[1] = MakeTransactionRef(std::move(scpTx));
+    std::cout << " Zagg tx added to the block" << "\n";
+
+
     pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev, chainparams.GetConsensus());
+    std::cout << " After GenerateCoinbaseCommitment \n";
     pblocktemplate->vTxFees[0] = -nFees;
 
     LogPrintf("CreateNewBlock(): block weight: %u txs: %u fees: %ld sigops %d\n", GetBlockWeight(*pblock), nBlockTx, nFees, nBlockSigOpsCost);
 
     // Fill in header
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
+    std::cout << " After GetBlockHash \n";
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
+    std::cout << " After UpdateTime \n";
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
+    std::cout << " After GetNextWorkRequired \n";
     pblock->nNonce         = 0;
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
-
+    std::cout << " After GetLegacySigOpCount \n";
     CValidationState state;
+    std::cout << " Before calling TestBlockValidity \n";
     if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {
+        std::cout << " TestBlockValidity failed \n";
         throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state)));
     }
     int64_t nTime2 = GetTimeMicros();
 
     LogPrint(BCLog::BENCH, "CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), validity: %.2fms (total %.2fms)\n", 0.001 * (nTime1 - nTimeStart), nPackagesSelected, nDescendantsUpdated, 0.001 * (nTime2 - nTime1), 0.001 * (nTime2 - nTimeStart));
-
+    
     return std::move(pblocktemplate);
 }
 
