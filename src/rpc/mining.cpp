@@ -158,26 +158,34 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
 /** Generate zagg block */
 UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,const std::string scpTxHex)
 {
-    
+    std::cout << "Before blockhashes call\n";
     UniValue blockHashes(UniValue::VARR);
+    std::cout << "blockhashes call complete\n";
     
     // parse hex string from parameter
     CMutableTransaction mtx;
     if (!DecodeHexTx(mtx, scpTxHex))
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+    std::cout << "Decode hex complete\n";
     
     // Create the block with new blockHASH
     std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, mtx));
+    std::cout << "CreateNewBlock call complete\n";
     
     if (!pblocktemplate.get())
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
+    std::cout << "pblocktemplate get call complete\n";
     CBlock *pblock = &pblocktemplate->block;
-
+    std::cout << "pblocktemplate assignment complete\n";
+    
     std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
+    std::cout << "make_shared call complete\n";
     if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
+    std::cout << "processNewBlock call complete\n";
     blockHashes.push_back(pblock->GetHash().GetHex());
-
+    std::cout << "push_back call complete\n";
+    
     return blockHashes;
 }
 
