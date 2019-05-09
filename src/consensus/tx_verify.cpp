@@ -158,6 +158,7 @@ int64_t GetTransactionSigOpCost(const CTransaction& tx, const CCoinsViewCache& i
 
 bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fCheckDuplicateInputs)
 {
+    std::cout << " Inside checkTransaction \n";
     // Basic checks that don't depend on any context
     if (tx.vin.empty())
         return state.DoS(10, false, REJECT_INVALID, "bad-txns-vin-empty");
@@ -168,6 +169,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
         return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
 
     // Check for negative or overflow output values
+    std::cout << "Checking for overflows \n";
     CAmount nValueOut = 0;
     for (const auto& txout : tx.vout)
     {
@@ -181,6 +183,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     }
 
     // Check for duplicate inputs - note that this check is slow so we skip it in CheckBlock
+    std::cout << "Checking for duplicate inputs \n";
     if (fCheckDuplicateInputs) {
         std::set<COutPoint> vInOutPoints;
         for (const auto& txin : tx.vin)

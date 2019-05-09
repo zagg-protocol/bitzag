@@ -155,37 +155,84 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     return blockHashes;
 }
 
-/** Generate zagg block */
-UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,const std::string scpTxHex)
+/** 
+ * Generate zagg block. Overloaded method for forming zagg block. Default nGenerate = 1. 
+ **/
+UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, uint64_t nMaxTries, bool keepScript, const std::string scpTxHex, int nGenerate)
 {
-    std::cout << "Before blockhashes call\n";
+    static const int nInnerLoopCount = 0x10000;
+    int nHeightEnd = 0;
+    int nHeight = 0;
+
+    {   // Don't keep cs_main locked
+        LOCK(cs_main);
+        nHeight = chainActive.Height();
+        nHeightEnd = nHeight+nGenerate;
+    }
+    unsigned int nExtraNonce = 0;
+    // This is an array to collect all blockhashes.
+    // But for zagg purpose it will collect just one hash
     UniValue blockHashes(UniValue::VARR);
-    std::cout << "blockhashes call complete\n";
-    
-    // parse hex string from parameter
+
+    // Decode the HEX into MutableTransaction object for zagg block
     CMutableTransaction mtx;
-    if (!DecodeHexTx(mtx, scpTxHex))
-        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
-    std::cout << "Decode hex complete\n";
-    
-    // Create the block with new blockHASH
-    std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, mtx));
-    std::cout << "CreateNewBlock call complete\n";
-    
-    if (!pblocktemplate.get())
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
-    std::cout << "pblocktemplate get call complete\n";
-    CBlock *pblock = &pblocktemplate->block;
-    std::cout << "pblocktemplate assignment complete\n";
-    
-    std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
-    std::cout << "make_shared call complete\n";
-    if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
-    std::cout << "processNewBlock call complete\n";
-    blockHashes.push_back(pblock->GetHash().GetHex());
-    std::cout << "push_back call complete\n";
-    
+    if(!scpTxHex.empty())
+    {
+        std::cout << "Zagg block formation call \n";
+        // parse hex string from parameter
+        if (!DecodeHexTx(mtx, scpTxHex))
+            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+        std::cout << "Decode hex complete \n";
+    }
+    else
+    {
+        std::cout << " Not a zagg block formation call \n";
+    }
+
+    // We just need 1 block to be form for zagg
+    // This loop will run just once.
+    while (nHeight < nHeightEnd && !ShutdownRequested())
+    {   
+
+        std::cout << "Before createNewBlock \n";
+        std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, mtx));
+        std::cout << "After createNewBlock \n";
+
+        if (!pblocktemplate.get())
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
+
+        CBlock *pblock = &pblocktemplate->block;
+        {
+            LOCK(cs_main);
+            IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
+        }
+
+        std::cout << "Before finding nounce \n";
+        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
+            ++pblock->nNonce;
+            --nMaxTries;
+        }
+        std::cout << "After finding nounce. Nounce = " << pblock->nNonce << "\n";
+        if (nMaxTries == 0) {
+            break;
+        }
+        if (pblock->nNonce == nInnerLoopCount) {
+            continue;
+        }
+        std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
+        std::cout << "Before ProcessNewBlock \n";
+        if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
+        std::cout << "After ProcessNewBlock \n";
+        ++nHeight;
+        blockHashes.push_back(pblock->GetHash().GetHex());
+        //mark script as important because it was used at least for one coinbase output if the script came from the wallet
+        if (keepScript)
+        {
+            coinbaseScript->KeepScript();
+        }
+        std::cout << " while loop ends. BlockHash = " << pblock->GetHash().GetHex() << "\n";
+    }
     return blockHashes;
 }
 

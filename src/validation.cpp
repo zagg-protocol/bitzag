@@ -3095,13 +3095,17 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
 
     // Check that the header is valid (particularly PoW).  This is mostly
     // redundant with the call in AcceptBlockHeader.
+    std::cout << " Before CheckBlockHeader \n";
     if (!CheckBlockHeader(block, state, consensusParams, fCheckPOW))
         return false;
 
+    std::cout << " Before checking merkle root \n";
     // Check the merkle root.
     if (fCheckMerkleRoot) {
         bool mutated;
+        std::cout << " Before BlockMerkleRoot \n";
         uint256 hashMerkleRoot2 = BlockMerkleRoot(block, &mutated);
+        std::cout << " After BlockMerkleRoot \n";
         if (block.hashMerkleRoot != hashMerkleRoot2)
             return state.DoS(100, false, REJECT_INVALID, "bad-txnmrklroot", true, "hashMerkleRoot mismatch");
 
@@ -3129,6 +3133,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
         if (block.vtx[i]->IsCoinBase())
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-multiple", false, "more than one coinbase");
 
+    std::cout << " Before BlockMerkleRoot \n";
     // Check transactions
     for (const auto& tx : block.vtx)
         if (!CheckTransaction(*tx, state, true))
@@ -3178,24 +3183,33 @@ static int GetWitnessCommitmentIndex(const CBlock& block)
 
 void UpdateUncommittedBlockStructures(CBlock& block, const CBlockIndex* pindexPrev, const Consensus::Params& consensusParams)
 {
+    std::cout << " Inside UpdateUncommittedBlockStructures \n";
     int commitpos = GetWitnessCommitmentIndex(block);
+    std::cout << " After GetWitnessCommitmentIndex \n";
     static const std::vector<unsigned char> nonce(32, 0x00);
     if (commitpos != -1 && IsWitnessEnabled(pindexPrev, consensusParams) && !block.vtx[0]->HasWitness()) {
+        std::cout << " Inside if 1 \n";
         CMutableTransaction tx(*block.vtx[0]);
         tx.vin[0].scriptWitness.stack.resize(1);
         tx.vin[0].scriptWitness.stack[0] = nonce;
         block.vtx[0] = MakeTransactionRef(std::move(tx));
     }
+    std::cout << "UpdateUncommittedBlockStructures finishes \n";
 }
 
 std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBlockIndex* pindexPrev, const Consensus::Params& consensusParams)
 {
+    std::cout << " Inside GenerateCoinbaseCommitment \n";
     std::vector<unsigned char> commitment;
     int commitpos = GetWitnessCommitmentIndex(block);
+    std::cout << " After GetWitnessCommitmentIndex \n";
     std::vector<unsigned char> ret(32, 0x00);
     if (consensusParams.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout != 0) {
+        std::cout << " Inside if 1 \n";
         if (commitpos == -1) {
+            std::cout << " Inside if 2 \n";
             uint256 witnessroot = BlockWitnessMerkleRoot(block, nullptr);
+            std::cout << " Inside if 3 \n";
             CHash256().Write(witnessroot.begin(), 32).Write(ret.data(), 32).Finalize(witnessroot.begin());
             CTxOut out;
             out.nValue = 0;
@@ -3206,14 +3220,19 @@ std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBloc
             out.scriptPubKey[3] = 0x21;
             out.scriptPubKey[4] = 0xa9;
             out.scriptPubKey[5] = 0xed;
+            std::cout << " Inside if 4 \n";
             memcpy(&out.scriptPubKey[6], witnessroot.begin(), 32);
+            std::cout << " Inside if 5 \n";
             commitment = std::vector<unsigned char>(out.scriptPubKey.begin(), out.scriptPubKey.end());
             CMutableTransaction tx(*block.vtx[0]);
+            std::cout << " Inside if 6 \n";
             tx.vout.push_back(out);
             block.vtx[0] = MakeTransactionRef(std::move(tx));
+            std::cout << " Inside if 6 \n";
         }
     }
     UpdateUncommittedBlockStructures(block, pindexPrev, consensusParams);
+    std::cout << " After UpdateUncommittedBlockStructures \n";
     return commitment;
 }
 
@@ -3549,10 +3568,14 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
 
         // Ensure that CheckBlock() passes before calling AcceptBlock, as
         // belt-and-suspenders.
+        std::cout << " Before CheckBlock \n";
         bool ret = CheckBlock(*pblock, state, chainparams.GetConsensus());
+        std::cout << " After CheckBlock \n";
         if (ret) {
             // Store to disk
+            std::cout << " Before AcceptBlock \n";
             ret = g_chainstate.AcceptBlock(pblock, state, chainparams, &pindex, fForceProcessing, nullptr, fNewBlock);
+            std::cout << " After AcceptBlock \n";
         }
         if (!ret) {
             GetMainSignals().BlockChecked(*pblock, state);
