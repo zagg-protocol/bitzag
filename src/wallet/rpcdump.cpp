@@ -198,6 +198,79 @@ UniValue importprivkey(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+/** 
+ * Overloaded method for zagg
+ **/
+UniValue importprivkey(const std::string strSecret)
+{
+    std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
+    std::shared_ptr<CWallet> const wallet = wallets.size() > 0 ? wallets[0] : nullptr;
+    
+    CWallet* const pwallet = wallet.get();
+    if (!EnsureWalletIsAvailable(pwallet, true)) {
+        return NullUniValue;
+    }
+
+    WalletRescanReserver reserver(pwallet);
+    // Whether to perform rescan after import
+    bool fRescan = true;
+    {
+        auto locked_chain = pwallet->chain().lock();
+        LOCK(pwallet->cs_wallet);
+
+        EnsureWalletIsUnlocked(pwallet);
+
+        std::string strLabel = "";
+        // Whether to perform rescan after import
+        fRescan = false;
+
+        if (fRescan && fPruneMode)
+            throw JSONRPCError(RPC_WALLET_ERROR, "Rescan is disabled in pruned mode");
+
+        if (fRescan && !reserver.reserve()) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Wallet is currently rescanning. Abort existing rescan or wait.");
+        }
+
+        CKey key = DecodeSecret(strSecret);
+        if (!key.IsValid()) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key encoding");
+
+        CPubKey pubkey = key.GetPubKey();
+        assert(key.VerifyPubKey(pubkey));
+        CKeyID vchAddress = pubkey.GetID();
+        {
+            pwallet->MarkDirty();
+
+            // We don't know which corresponding address will be used;
+            // label all new addresses, and label existing addresses if a
+            // label was passed.
+            for (const auto& dest : GetAllDestinationsForKey(pubkey)) {
+                if (strLabel != "" || pwallet->mapAddressBook.count(dest) == 0) {
+                    pwallet->SetAddressBook(dest, strLabel, "receive");
+                }
+            }
+
+            // Don't throw error in case a key is already there
+            if (pwallet->HaveKey(vchAddress)) {
+                return NullUniValue;
+            }
+
+            // whenever a key is imported, we need to scan the whole chain
+            pwallet->UpdateTimeFirstKey(1);
+            pwallet->mapKeyMetadata[vchAddress].nCreateTime = 1;
+
+            if (!pwallet->AddKeyPubKey(key, pubkey)) {
+                throw JSONRPCError(RPC_WALLET_ERROR, "Error adding key to wallet");
+            }
+            pwallet->LearnAllRelatedScripts(pubkey);
+        }
+    }
+    if (fRescan) {
+        RescanWallet(*pwallet, reserver);
+    }
+
+    return NullUniValue;
+}
+
 UniValue abortrescan(const JSONRPCRequest& request)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
